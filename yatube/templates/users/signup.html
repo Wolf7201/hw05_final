@@ -1,0 +1,18 @@
+{% extends "card.html" %}
+
+{% block title %}Зарегистрироваться{% endblock %}
+
+{% block card-header %}
+  Зарегистрироваться
+{% endblock %}
+
+{% block card-body %}
+  {% include 'includes/form_generation.html' %}
+  <div class="col-md-6 offset-md-4">
+    <button type="submit" class="btn btn-primary">
+      Зарегистрироваться
+    </button>
+  </div>
+  </form>
+{% endblock %}
+

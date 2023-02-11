@@ -1,0 +1,28 @@
+{% extends "card.html" %}
+
+{% block title %}
+  {% if post %}Редактировать пост{% else %}Новый пост{% endif %}
+{% endblock %}
+
+{% block card-header %}
+  {% if post %}Редактировать пост{% else %}Новый пост{% endif %}
+{% endblock %}
+
+{% block card-body %}
+  <form method="post"
+          {% if post %}
+        action="{% url 'posts:post_edit' post.id %}"
+          {% else %}
+        action="{% url 'posts:post_create' %}"
+          {% endif %}
+        enctype="multipart/form-data"
+  >
+    {% csrf_token %}
+    {% include 'includes/form_generation.html' %}
+    <div class="d-flex justify-content-end">
+      <button type="submit" class="btn btn-primary">
+        {% if post %}Сохранить{% else %}Добавить{% endif %}
+      </button>
+    </div>
+  </form>
+{% endblock %}
