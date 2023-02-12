@@ -3,6 +3,7 @@ from http import HTTPStatus
 from django.test import TestCase, Client
 
 from ..models import Post, User, Group
+from django.core.cache import cache
 
 
 class PostsURLTests(TestCase):
@@ -44,6 +45,7 @@ class PostsURLTests(TestCase):
         self.guest_client = Client()
         self.authorized_client = Client()
         self.authorized_client.force_login(self.user)
+        cache.clear()
 
     def test_urls_exists_at_desired_location_for_guest(self):
         """Проверка доступности адресов для гостей"""
