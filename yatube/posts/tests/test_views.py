@@ -248,6 +248,7 @@ class PaginatorViewsTest(TestCase):
     def setUp(self):
         self.authorized_client = Client()
         self.authorized_client.force_login(self.user)
+        cache.clear()
 
     def test_first_page_contains_ten_records(self):
         for reverse_name in self.templates_pages_names:
@@ -255,7 +256,7 @@ class PaginatorViewsTest(TestCase):
                 response = self.authorized_client.get(reverse_name)
 
                 self.assertEqual(
-                    len(response.context.get('page_obj')),
+                    len(response.context['page_obj']),
                     self.FIRST_PAGE_SIZE
                 )
 
@@ -263,8 +264,7 @@ class PaginatorViewsTest(TestCase):
         for reverse_name in self.templates_pages_names:
             with self.subTest(reverse_name=reverse_name):
                 response = self.client.get(reverse('posts:index'), {'page': 2})
-
                 self.assertEqual(
-                    len(response.context.get('page_obj')),
+                    len(response.context['page_obj']),
                     self.SECOND_PAGE_SIZE
                 )
