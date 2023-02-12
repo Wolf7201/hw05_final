@@ -263,7 +263,8 @@ class PaginatorViewsTest(TestCase):
     def test_second_page_contains_three_records(self):
         for reverse_name in self.templates_pages_names:
             with self.subTest(reverse_name=reverse_name):
-                response = self.client.get(reverse('posts:index'), {'page': 2})
+                response = self.authorized_client.get(reverse('posts:index'), {'page': 2})
+                print(response.context)
                 self.assertEqual(
                     len(response.context['page_obj']),
                     self.SECOND_PAGE_SIZE

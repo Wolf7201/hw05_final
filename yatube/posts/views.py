@@ -11,7 +11,7 @@ from django.http import HttpResponseRedirect
 PAGE_SIZE = settings.NUMBER_OF_POSTS_PER_PAGE
 
 
-@cache_page(20, key_prefix='index_page')
+# @cache_page(20, key_prefix='index_page')
 def index(request):
     post_list = Post.objects.select_related('author', 'group')
     page_obj = includes_paginator(request, post_list, PAGE_SIZE)
