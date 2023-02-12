@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
-# from django.views.decorators.cache import cache_page
+from django.views.decorators.cache import cache_page
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render, redirect
 
@@ -11,7 +11,7 @@ from .utils import includes_paginator
 PAGE_SIZE = settings.NUMBER_OF_POSTS_PER_PAGE
 
 
-# @cache_page(20, key_prefix='index_page')
+@cache_page(20, key_prefix='index_page')
 def index(request):
     post_list = Post.objects.select_related('author', 'group')
     page_obj = includes_paginator(request, post_list, PAGE_SIZE)
