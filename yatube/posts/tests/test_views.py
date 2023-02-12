@@ -1,17 +1,17 @@
+import shutil
+import tempfile
+from http import HTTPStatus
+
 from django import forms
 from django.conf import settings
+from django.core.cache import cache
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.paginator import Page
 from django.test import TestCase, Client, override_settings
 from django.urls import reverse
 
-from ..models import Post, User, Group
 from ..forms import PostForm
-
-import shutil
-import tempfile
-from django.core.files.uploadedfile import SimpleUploadedFile
-from django.core.cache import cache
-from http import HTTPStatus
+from ..models import Post, User, Group
 
 TEMP_MEDIA_ROOT = tempfile.mkdtemp(dir=settings.BASE_DIR)
 
@@ -263,8 +263,9 @@ class PaginatorViewsTest(TestCase):
     def test_second_page_contains_three_records(self):
         for reverse_name in self.templates_pages_names:
             with self.subTest(reverse_name=reverse_name):
-                response = self.authorized_client.get(reverse('posts:index'), {'page': 2})
-                print(response.context)
+                response = self.authorized_client.get(
+                    reverse('posts:index'), {'page': 2}
+                )
                 self.assertEqual(
                     len(response.context['page_obj']),
                     self.SECOND_PAGE_SIZE

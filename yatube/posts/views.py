@@ -1,12 +1,12 @@
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
+# from django.views.decorators.cache import cache_page
+from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render, redirect
 
 from .forms import PostForm, CommentForm
 from .models import Group, Post, User, Follow
 from .utils import includes_paginator
-from django.views.decorators.cache import cache_page
-from django.http import HttpResponseRedirect
 
 PAGE_SIZE = settings.NUMBER_OF_POSTS_PER_PAGE
 
