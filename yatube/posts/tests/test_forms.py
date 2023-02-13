@@ -113,7 +113,6 @@ class PostsCreateFormTests(TestCase):
         self.assertEqual(edit_post.text, form_data['text'])
         self.assertEqual(edit_post.group.id, new_group.id)
 
-
     def test_create_post_unauthorized_user(self):
         """Валидная форма от неавторизованного
          пользователя не создает запись в Post."""
