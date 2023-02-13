@@ -48,7 +48,8 @@ class Post(models.Model):
     image = models.ImageField(
         'Картинка',
         upload_to='posts/',
-        blank=True
+        blank=True,
+        help_text='Картинка к посту',
     )
 
     class Meta:
@@ -86,7 +87,7 @@ class Comment(models.Model):
     )
 
     class Meta:
-        ordering = ['-created']
+        ordering = ['created']
         verbose_name = 'Комментарий'
         verbose_name_plural = 'Комментарии'
 
@@ -108,3 +109,5 @@ class Follow(models.Model):
 
     def __str__(self):
         return f"Последователь: '{self.user}', автор: '{self.author}'"
+        # Я бы вот с удовольствием повозился с запретами,
+        # если бы это был бы не последний день сдачи, давай в другой раз

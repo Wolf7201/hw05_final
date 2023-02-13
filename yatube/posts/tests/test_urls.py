@@ -96,9 +96,11 @@ class PostsURLTests(TestCase):
         self.assertEqual(response, HTTPStatus.OK.FOUND)
 
     def test_request_to_non_existent_page(self):
-        """Проверка, запрос к несуществующей странице вернёт ошибку 404"""
-        url = '/none_page/'
-        self.assertEqual(
-            self.authorized_client.get(url).status_code,
-            HTTPStatus.NOT_FOUND
-        )
+        """Проверка, запрос к несуществующей странице вернёт ошибку 404,
+         и перенаправит на нужную страницу"""
+        response = self.client.get('/nonexist-page/')
+        self.assertEqual(response.status_code, HTTPStatus.NOT_FOUND)
+        self.assertTemplateUsed(response, 'core/404.html')
+
+
+

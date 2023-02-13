@@ -39,7 +39,11 @@ def profile(request, username):
     page_obj = includes_paginator(request, post_list, PAGE_SIZE)
 
     user = request.user
-    following = user.is_authenticated and author.following.exists()
+    following = (
+            (user.is_authenticated
+             and Follow.objects.filter(user=user).filter(author=author))
+            and (author != user)
+    )
 
     context = {
         'author': author,
@@ -55,7 +59,7 @@ def post_detail(request, post_id):
         id=post_id
     )
     comments = post.comments.select_related('author')
-    form = CommentForm(request.POST or None)
+    form = CommentForm()
     context = {
         'post': post,
         'form': form,
@@ -111,8 +115,8 @@ def add_comment(request, post_id):
 @login_required
 def follow_index(request):
     user = request.user
-    authors = user.follower.values_list('author', flat=True)
-    posts_list = Post.objects.filter(author__id__in=authors)
+    author = user.follower.values_list('author', flat=True)
+    posts_list = Post.objects.filter(author__following__user=user)
 
     page_obj = includes_paginator(request, posts_list, PAGE_SIZE)
     context = {
@@ -124,19 +128,19 @@ def follow_index(request):
 
 @login_required
 def profile_follow(request, username):
-    author = User.objects.get(username=username)
+    author = get_object_or_404(User, username=username)
     user = request.user
     if author != user:
         Follow.objects.get_or_create(user=user, author=author)
-        return redirect(
-            'posts:profile',
-            username=username
-        )
-    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+    return redirect(
+        'posts:profile',
+        username=username
+    )
 
 
 @login_required
 def profile_unfollow(request, username):
     user = request.user
-    Follow.objects.get(user=user, author__username=username).delete()
+    author = get_object_or_404(User, username=username)
+    Follow.objects.get(user=user, author=author).delete()
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))

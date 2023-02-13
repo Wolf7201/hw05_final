@@ -39,7 +39,7 @@
               <a class="nav-link link-light {% if view_name  == 'posts:profile' %}active{% endif %}"
                  href="{% url 'posts:profile' user.username %}"> Пользователь: {{ user.username }}</a>
             </li>
-            {% if request.user.username == 'admin1' %}
+            {% if request.user.is_superuser %}
               <li>
                 <a class="nav-link link-light"
                    href="http://127.0.0.1:8000/admin/">Админка</a>

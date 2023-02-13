@@ -1,6 +1,5 @@
 import shutil
 import tempfile
-from http import HTTPStatus
 
 from django import forms
 from django.conf import settings
@@ -10,8 +9,8 @@ from django.core.paginator import Page
 from django.test import TestCase, Client, override_settings
 from django.urls import reverse
 
-from ..forms import PostForm
-from ..models import Post, User, Group
+from ..forms import PostForm, CommentForm
+from ..models import Post, User, Group, Comment, Follow
 
 TEMP_MEDIA_ROOT = tempfile.mkdtemp(dir=settings.BASE_DIR)
 
@@ -23,7 +22,7 @@ class PostsURLTests(TestCase):
     def setUpClass(cls):
         super().setUpClass()
 
-        cls.small_gif = (
+        small_gif = (
             b'\x47\x49\x46\x38\x39\x61\x02\x00'
             b'\x01\x00\x80\x00\x00\x00\x00\x00'
             b'\xFF\xFF\xFF\x21\xF9\x04\x00\x00'
@@ -31,9 +30,9 @@ class PostsURLTests(TestCase):
             b'\x02\x00\x01\x00\x00\x02\x02\x0C'
             b'\x0A\x00\x3B'
         )
-        cls.uploaded = SimpleUploadedFile(
+        uploaded = SimpleUploadedFile(
             name='small.gif',
-            content=cls.small_gif,
+            content=small_gif,
             content_type='image/gif'
         )
         cls.user = User.objects.create_user(username='HasNoName')
@@ -48,7 +47,13 @@ class PostsURLTests(TestCase):
             text='Тестовый текст',
             author=cls.user,
             group=cls.group,
-            image=cls.uploaded,
+            image=uploaded,
+        )
+
+        cls.comment = Comment.objects.create(
+            post=cls.post,
+            author=cls.user,
+            text='Текст комментария'
         )
 
         cls.index = reverse('posts:index')
@@ -85,13 +90,6 @@ class PostsURLTests(TestCase):
         self.authorized_client = Client()
         self.authorized_client.force_login(self.user)
         cache.clear()
-
-    def test_error_page(self):
-        response = self.client.get('/nonexist-page/')
-        self.assertEqual(
-            response.status_code,
-            HTTPStatus.NOT_FOUND)
-        self.assertTemplateUsed(response, 'core/404.html')
 
     def test_cache_index(self):
         """Проверка хранения и очищения кэша для index."""
@@ -194,6 +192,13 @@ class PostsURLTests(TestCase):
         """Проверяем Context страницы post_detail"""
         context = self.authorized_client.get(self.post_detail).context
         self.method_check_post(context, False)
+        form = context.get('form')
+        self.assertIsInstance(form, CommentForm)
+        form_field = form.fields.get('text')
+        self.assertIsInstance(form_field, forms.fields.CharField)
+        comments = context.get('comments')
+        comment = comments[0]
+        self.assertEqual(comment, self.comment)
 
     def test_post_create_page_show_correct_context(self):
         """Проверяем Context страницы post_create"""
@@ -270,3 +275,69 @@ class PaginatorViewsTest(TestCase):
                     len(response.context['page_obj']),
                     self.SECOND_PAGE_SIZE
                 )
+
+
+class FollowTests(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+
+        cls.user = User.objects.create_user(username='test_user')
+        cls.user_following = User.objects.create_user(username='test_user2')
+        cls.user_without_post = User.objects.create_user(
+            username='test_user_2'
+        )
+        cls.group = Group.objects.create(
+            title='Заголовок для 1 тестовой группы',
+            slug='test_slug'
+        )
+        cls.post = Post.objects.create(
+            author=cls.user,
+            text='Тестовая запись для создания 1 поста',
+            group=cls.group,
+        )
+
+    def setUp(self):
+        self.guest_client = Client()
+        self.authorized_client = Client()
+        self.client_auth_following = Client()
+        self.authorized_client.force_login(self.user)
+        self.client_auth_following.force_login(self.user_following)
+
+    def test_follow_authorized(self):
+        """ Авторизованный пользователь может подписываться"""
+        self.client_auth_following.get(
+            reverse('posts:profile_follow',
+                    kwargs={'username': self.user.username})
+        )
+        self.assertEqual(Follow.objects.all().count(), 1)
+
+    def test_follow_guest(self):
+        """ не Авторизованный пользователь не может подписываться"""
+        self.guest_client.get(
+            reverse(
+                'posts:profile_follow',
+                kwargs={'username': self.user.username}
+            )
+        )
+        self.assertEqual(Follow.objects.all().count(), 0)
+
+    def test_unfollow(self):
+        """
+        Авторизованный пользователь может
+        подписываться и отписаться от автора
+        """
+        self.client_auth_following.get(
+            reverse(
+                'posts:profile_follow',
+                kwargs={'username': self.user.username}
+            )
+        )
+
+        self.client_auth_following.get(
+            reverse(
+                'posts:profile_unfollow',
+                kwargs={'username': self.user.username}
+            )
+        )
+        self.assertEqual(Follow.objects.all().count(), 0)

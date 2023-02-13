@@ -1,4 +1,4 @@
-{% extends 'base_form_page.html' %}
+{% extends 'base.html' %}
 {% load thumbnail %}
 {% block title %}
   Пост {{ post.text|truncatechars:30 }}
@@ -36,7 +36,7 @@
         <img class="card-img my-2" src="{{ im.url }}">
       {% endthumbnail %}
       <p>{{ post.text|linebreaksbr }}</p>
-      {% if post.author.username == request.user.username %}
+      {% if post.author == user %}
         <a class="btn btn-primary" href="{% url 'posts:post_edit' post.pk %}">Редактировать пост</a>
       {% endif %}
     {% include 'includes/comment_form.html' %}
