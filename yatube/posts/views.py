@@ -39,8 +39,8 @@ def profile(request, username):
     page_obj = includes_paginator(request, post_list, PAGE_SIZE)
 
     user = request.user
-    following = ((user.is_authenticated
-                  and Follow.objects.filter(user=user).filter(author=author))
+    following = (user.is_authenticated
+                 and Follow.objects.filter(user=user).filter(author=author)
                  and (author != user))
 
     context = {
@@ -140,4 +140,7 @@ def profile_unfollow(request, username):
     user = request.user
     author = get_object_or_404(User, username=username)
     Follow.objects.get(user=user, author=author).delete()
-    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+    return redirect(
+        'posts:profile',
+        username=username
+    )

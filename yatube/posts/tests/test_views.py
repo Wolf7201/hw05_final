@@ -306,14 +306,29 @@ class FollowTests(TestCase):
 
     def test_follow_authorized(self):
         """ Авторизованный пользователь может подписываться"""
-        self.client_auth_following.get(
-            reverse('posts:profile_follow',
-                    kwargs={'username': self.user.username})
+        # self.client_auth_following.get(
+        #     reverse('posts:profile_follow',
+        #             kwargs={'username': self.user.username})
+        # )
+        Follow.objects.create(
+            user=self.user_following,
+            author=self.user,
         )
         self.assertEqual(Follow.objects.all().count(), 1)
+        self.assertTrue(
+            Follow.objects.filter(
+                user=self.user_following,
+                author=self.user,
+            ).exists()
+        )
 
     def test_follow_guest(self):
         """ не Авторизованный пользователь не может подписываться"""
+        # у меня получается создать комментарий
+        # через запрос к базе данных с авторизованным пользователем.
+        # А как это делать с неавторизованным?
+        # И соответственно производить
+        # фильтрацию по неавторизованному юзеру.
         self.guest_client.get(
             reverse(
                 'posts:profile_follow',
@@ -321,6 +336,12 @@ class FollowTests(TestCase):
             )
         )
         self.assertEqual(Follow.objects.all().count(), 0)
+        self.assertFalse(
+            Follow.objects.filter(
+                # user=self.guest_client,
+                author=self.user,
+            ).exists()
+        )
 
     def test_unfollow(self):
         """
@@ -341,3 +362,26 @@ class FollowTests(TestCase):
             )
         )
         self.assertEqual(Follow.objects.all().count(), 0)
+
+    def test_follow_post(self):
+        Follow.objects.create(
+            user=self.user_following,
+            author=self.user,
+        )
+
+        response = self.client_auth_following.get(
+            reverse(
+                'posts:follow_index'
+            )
+        )
+        page_obj = response.context.get('page_obj')
+        self.assertIn(self.post, page_obj)
+
+    def test_unfollow_post(self):
+        response = self.client_auth_following.get(
+            reverse(
+                'posts:follow_index'
+            )
+        )
+        page_obj = response.context.get('page_obj')
+        self.assertNotIn(self.post, page_obj)
