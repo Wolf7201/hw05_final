@@ -306,27 +306,18 @@ class FollowTests(TestCase):
 
     def test_follow_authorized(self):
         """ Авторизованный пользователь может подписываться"""
-        Follow.objects.create(
-            user=self.user_following,
-            author=self.user,
+        self.client_auth_following.get(
+            reverse(
+                'posts:profile_follow',
+                kwargs={'username': self.user.username}
+            )
         )
-        self.assertEqual(Follow.objects.all().count(), 1)
         self.assertTrue(
             Follow.objects.filter(
                 user=self.user_following,
                 author=self.user,
             ).exists()
         )
-
-    def test_follow_guest(self):
-        """ не Авторизованный пользователь не может подписываться"""
-        self.guest_client.get(
-            reverse(
-                'posts:profile_follow',
-                kwargs={'username': self.user.username}
-            )
-        )
-        self.assertEqual(Follow.objects.all().count(), 0)
 
     def test_unfollow(self):
         """
@@ -341,6 +332,21 @@ class FollowTests(TestCase):
         self.client_auth_following.get(
             reverse(
                 'posts:profile_unfollow',
+                kwargs={'username': self.user.username}
+            )
+        )
+        self.assertFalse(
+            Follow.objects.filter(
+                user=self.user_following,
+                author=self.user,
+            ).exists()
+        )
+
+    def test_follow_guest(self):
+        """ не Авторизованный пользователь не может подписываться"""
+        self.guest_client.get(
+            reverse(
+                'posts:profile_follow',
                 kwargs={'username': self.user.username}
             )
         )
