@@ -82,8 +82,8 @@ class PostsCreateFormTests(TestCase):
         self.assertEqual(first_object.text, form_data['text'])
         self.assertEqual(first_object.group.id, self.group.id)
 
-        # вот этот тест ошибку дает, как правильно сравнить?
-        # self.assertEqual(first_object.image, form_data['image'])
+        image = uploaded.name
+        self.assertEqual(first_object.image, f'posts/{image}')
 
     def test_edit_post(self):
         """Валидная форма изменяет запись в Post."""
