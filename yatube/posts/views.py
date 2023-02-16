@@ -1,7 +1,6 @@
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import cache_page
-from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render, redirect
 
 from .forms import PostForm, CommentForm
