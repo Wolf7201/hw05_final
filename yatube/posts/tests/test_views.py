@@ -350,7 +350,12 @@ class FollowTests(TestCase):
                 kwargs={'username': self.user.username}
             )
         )
-        self.assertEqual(Follow.objects.all().count(), 0)
+        self.assertFalse(
+            Follow.objects.filter(
+                user=self.user_following,
+                author=self.user,
+            ).exists()
+        )
 
     def test_follow_post(self):
         Follow.objects.create(
