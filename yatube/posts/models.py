@@ -109,4 +109,4 @@ class Follow(models.Model):
 
     def __str__(self):
         return f"Последователь: '{self.user}', автор: '{self.author}'"
-        # Спасибо)
+
